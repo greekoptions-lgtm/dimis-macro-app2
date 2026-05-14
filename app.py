@@ -1,67 +1,64 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
-st.set_page_config(page_title="Dimis Macro Position Sizer", layout="centered")
-
+st.set_page_config(page_title="Dimis Macro App", layout="wide")
 st.title("📊 Dimis Macro Position Sizer")
 
-# --- Sidebar για επιλογές χρήστη ---
+# --- Sidebar: Settings & Links ---
 st.sidebar.header("Ρυθμίσεις")
 score = st.sidebar.number_input("Εβδομαδιαίο Macro Score (0-100):", min_value=0, max_value=100, value=47)
 capital = st.sidebar.number_input("Συνολικό Κεφάλαιο (€):", min_value=0, value=10000)
 risk = st.sidebar.selectbox("Προφίλ Ρίσκου:", ["Συντηρητικό", "Μέτριο", "Επιθετικό"], index=1)
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("📌 Δοκίμασε το [Tangem Wallet](https://tangem.com) για ασφαλή crypto wallets")
-st.sidebar.markdown("🔥 Ξεκίνα με crypto στο [Bybit](https://www.bybit.com)")
+st.sidebar.markdown("📌 Δοκίμασε το [Tangem Wallet](https://tangem.com/) για ασφαλή crypto wallets")
+st.sidebar.markdown("🔥 Ξεκίνα με crypto στο [Bybit](https://www.bybit.com/)")
 
-# --- Υπολογισμός έκθεσης ---
-def calculate_exposure(score, capital, risk):
-    mult = {"Συντηρητικό": 0.6, "Μέτριο": 1.0, "Επιθετικό": 1.4}
-    exposure = (score / 100) * mult[risk]
-    exposure = max(0.0, min(1.0, exposure))
-    inv = capital * exposure
-    res = capital - inv
-    return exposure, inv, res
+# --- Compute Position ---
+mult = {"Συντηρητικό": 0.6, "Μέτριο": 1.0, "Επιθετικό": 1.4}
+exposure = (score / 100) * mult[risk]
+exposure = max(0.0, min(1.0, exposure))
+inv = capital * exposure
+res = capital - inv
 
-exposure, inv, res = calculate_exposure(score, capital, risk)
+st.subheader("Υπολογισμός Θέσης")
+st.metric("Προτεινόμενη Επένδυση", f"{inv:,.2f}€", delta=f"{exposure*100:.1f}%")
+st.info(f"Απόθεμα σε Stablecoins: {res:,.2f}€")
 
-if st.button("Υπολογισμός Θέσης"):
-    # --- Απεικόνιση αποτελεσμάτων ---
-    col1, col2 = st.columns([1,1])
-    
-    color = "#22ab94" if exposure >= 0.6 else "#f7525f" if exposure <= 0.35 else "#f5a623"
-    
-    with col1:
-        st.metric(
-            label="Προτεινόμενη Επένδυση",
-            value=f"{inv:,.2f}€",
-            delta=f"Ποσοστό: {exposure*100:.1f}%",
-            delta_color="inverse"
-        )
-    with col2:
-        st.metric(
-            label="Απόθεμα σε Stablecoins",
-            value=f"{res:,.2f}€"
-        )
-    
-    # --- Expander για λεπτομέρειες ---
-    with st.expander("Πώς υπολογίζεται;"):
-        st.write(f"""
-        - Score: {score} / 100  
-        - Risk multiplier για {risk}: {round(exposure / (score/100),2)}  
-        - Επένδυση = Score/100 * Risk multiplier * Συνολικό Κεφάλαιο  
-        - Stablecoins = Κεφάλαιο - Επένδυση
-        """)
+# --- Show Calculation Explanation ---
+with st.expander("Πώς υπολογίζεται;"):
+    st.write("""
+    - Ο weekly Macro Score (0-100) δείχνει τη γενική εικόνα της αγοράς.
+    - Το προφίλ ρίσκου επηρεάζει το πόσο μεγάλο μέρος του κεφαλαίου εκτίθεται.
+    - Exposure = Score / 100 * Risk Multiplier
+    - Investment = Capital * Exposure
+    """)
 
-    # --- Ιστορικά δεδομένα (mock για παράδειγμα) ---
-    st.subheader("Ιστορικά Προτεινόμενης Θέσης")
-    history_data = {
-        "Ημερομηνία": pd.date_range(start="2026-03-01", periods=8, freq='W'),
-        "Score": [40, 45, 50, 48, 52, 47, 50, score],
-        "Επένδυση (€)": [6000, 6750, 7500, 7200, 7800, 7050, 7500, inv]
-    }
-    df = pd.DataFrame(history_data)
-    st.line_chart(df.set_index("Ημερομηνία")["Επένδυση (€)"])
-    
-    st.caption("Το γράφημα δείχνει πώς θα είχε αλλάξει η προτεινόμενη επένδυση ανά εβδομάδα με τα προηγούμενα scores.")
+# --- Load Weekly Snapshot for Historical Chart ---
+@st.cache_data
+def load_snapshot():
+    # Αν έχεις το Google Sheets export ως CSV
+    df = pd.read_csv("WEEKLY_SNAPSHOT.csv", parse_dates=["Snapshot Date"])
+    df["Investment"] = df["Overall Score"] / 100 * df["Total Capital"]
+    return df
+
+# --- Example: Fake Data if no CSV ---
+import datetime, numpy as np
+dates = pd.date_range(end=datetime.date(2026,5,14), periods=10, freq='W')
+example_df = pd.DataFrame({
+    "Snapshot Date": dates,
+    "Investment": [6763, 7200, 7500, 7300, 7800, 7100, 7600, 7300, 7500, 3241]
+})
+
+df = example_df  # replace with load_snapshot() if real CSV
+
+# --- Historical Chart ---
+st.subheader("Ιστορικά Προτεινόμενης Θέσης")
+chart = alt.Chart(df).mark_line(point=True).encode(
+    x=alt.X("Snapshot Date:T", title="Ημερομηνία"),
+    y=alt.Y("Investment:Q", title="Προτεινόμενη Επένδυση (€)"),
+    tooltip=["Snapshot Date:T", "Investment:Q"]
+).properties(width=800, height=400)
+
+st.altair_chart(chart, use_container_width=True)

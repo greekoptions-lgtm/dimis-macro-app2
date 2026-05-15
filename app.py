@@ -34,7 +34,7 @@ stablecoins = capital - investment
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Προτεινόμενη Επένδυση σε crypto")
+    st.subheader("Επένδυση σε crypto")
     st.markdown(f"""
     <div style="font-size:22px; font-weight:bold; color:#000;">
         {investment:,.2f} €

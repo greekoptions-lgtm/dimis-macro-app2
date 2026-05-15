@@ -16,7 +16,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("📌 Δοκίμασε το [Tangem Wallet](https://tangem.com/) για ασφαλή crypto wallets")
-    st.markdown("🔥 Ξεκίνα με crypto στο [Bybit](https://www.bybit.com/)")
+    st.markdown("🔥 Ξεκίνα με crypto στο [Bybit](https://www.bybit.eu/b/DIMISGROP/)")
 
 # -------------------------
 # Compute position

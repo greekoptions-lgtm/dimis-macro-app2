@@ -36,10 +36,10 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("Προτεινόμενη Επένδυση σε crypto")
     st.markdown(f"""
-    <div style="font-size:28px; font-weight:bold; color:#000;">
+    <div style="font-size:22px; font-weight:bold; color:#000;">
         {investment:,.2f} €
     </div>
-    <div style="font-size:16px; color:green;">
+    <div style="font-size:14px; color:green;">
         ↑ {exposure*100:.1f}%
     </div>
     """, unsafe_allow_html=True)

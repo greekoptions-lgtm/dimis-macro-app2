@@ -47,7 +47,7 @@ with col1:
 with col2:
     st.subheader("Απόθεμα σε Stablecoins")
     st.markdown(f"""
-    <div style="font-size:28px; font-weight:bold; color:#000;">
+    <div style="font-size:22px; font-weight:bold; color:#000;">
         {stablecoins:,.2f} €
     </div>
     """, unsafe_allow_html=True)

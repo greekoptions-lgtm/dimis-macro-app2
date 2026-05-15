@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import datetime
 
 # -------------------------
 # Streamlit Layout
@@ -29,6 +31,19 @@ investment = capital * exposure
 stablecoins = capital - investment
 
 # -------------------------
+# Format large numbers
+# -------------------------
+def format_large(x):
+    if x >= 1_000_000_000_000:
+        return f"{x/1_000_000_000_000:.2f}T"
+    elif x >= 1_000_000_000:
+        return f"{x/1_000_000_000:.2f}B"
+    elif x >= 1_000_000:
+        return f"{x/1_000_000:.2f}M"
+    else:
+        return f"{x:,.2f}"
+
+# -------------------------
 # Layout with columns
 # -------------------------
 col1, col2 = st.columns(2)
@@ -37,7 +52,7 @@ with col1:
     st.subheader("Επένδυση σε crypto")
     st.markdown(f"""
     <div style="font-size:22px; font-weight:bold; color:#000;">
-        {investment:,.2f} €
+        {format_large(investment)} €
     </div>
     <div style="font-size:14px; color:green;">
         ↑ {exposure*100:.1f}%
@@ -48,7 +63,7 @@ with col2:
     st.subheader("Απόθεμα σε Stablecoins")
     st.markdown(f"""
     <div style="font-size:22px; font-weight:bold; color:#000;">
-        {stablecoins:,.2f} €
+        {format_large(stablecoins)} €
     </div>
     """, unsafe_allow_html=True)
 
@@ -67,13 +82,10 @@ with st.expander("Πώς υπολογίζεται;"):
 # -------------------------
 # Optional: Historical positions chart
 # -------------------------
-# Αν θέλεις να δείχνεις ιστορικά, μπορείς να φορτώσεις από CSV/Sheets
-# Εδώ ένα παράδειγμα με τυχαία δεδομένα
-import numpy as np
-import datetime
-
 dates = [datetime.date.today() - datetime.timedelta(weeks=i) for i in range(10)][::-1]
 positions = [(score/100) * mult["Μέτριο"] * capital * np.random.uniform(0.9,1.1) for _ in range(10)]
 df_hist = pd.DataFrame({"Date": dates, "Position": positions})
+df_hist["Position Display"] = df_hist["Position"].apply(format_large)
+
 st.subheader("Ιστορικά Προτεινόμενης Θέσης")
 st.line_chart(df_hist.set_index("Date")["Position"])

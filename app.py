@@ -17,7 +17,7 @@ with st.sidebar:
     risk = st.selectbox("Προφίλ Ρίσκου:", ["Συντηρητικό", "Μέτριο", "Επιθετικό"], index=1)
 
     st.markdown("---")
-    st.markdown("📌 Δοκίμασε το [Tangem Wallet](https://tangem.com/) για ασφαλή crypto wallets")
+    st.markdown("📌 Δοκίμασε το [Tangem Wallet](https://tangem.com/invite/HMR8FA/) για ασφαλή crypto wallets")
     st.markdown("🔥 Ξεκίνα με crypto στο [Bybit](https://www.bybit.eu/b/DIMISGROP/)")
 
 # -------------------------
